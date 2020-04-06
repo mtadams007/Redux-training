@@ -14,10 +14,42 @@ const counter = (state = 0, action) => {
   }
 };
 
+// HOMEMADE createStore
+// const createStore = (reducer) => {
+//   let state = 0;
+//   let listeners = [];
+//   const getState = () => state;
+//   const dispatch = (action) => {
+//     state = reducer(state, action);
+//     listeners.forEach((listener) => listener());
+//   };
+//   const subscribe = (listener) => {
+//     listeners.push(listener);
+
+//     return () => {
+//       listeners.filter((l) => l !== listener);
+//     };
+//   };
+
+//   return { getState, dispatch, subscribe };
+// };
+
+const Counter = ({ value, onIncrement, onDecrement }) => (
+  <div>
+    <h1>{value}</h1>
+    <button onClick={onIncrement}>+</button>
+    <button onClick={onDecrement}>-</button>
+  </div>
+);
+
 const store = createStore(counter);
 
-const handleClick = () => {
+const onIncrement = () => {
   store.dispatch({ type: "INCREMENT" });
+};
+
+const onDecrement = () => {
+  store.dispatch({ type: "DECREMENT" });
 };
 
 function App() {
@@ -32,16 +64,30 @@ function App() {
         <img src={logo} className="App-logo" alt="logo" />
         <p>{store.getState()}</p>
         <button
-          className="App-link"
           onClick={() => {
-            handleClick();
+            onIncrement();
           }}
         >
           Plus 1
+        </button>
+        <button
+          onClick={() => {
+            onDecrement();
+          }}
+        >
+          Minus 1
         </button>
       </header>
     </div>
   );
 }
+
+const render = () =>
+  ReactDOM.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>,
+    document.getElementById("root")
+  );
 
 export default App;
