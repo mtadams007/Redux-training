@@ -1,93 +1,93 @@
-import React from "react";
-import { createStore } from "redux";
-import logo from "./logo.svg";
-import "./App.css";
+// import React from "react";
+// import { createStore } from "redux";
+// import logo from "./logo.svg";
+// import "./App.css";
 
-const counter = (state = 0, action) => {
-  switch (action.type) {
-    case "INCREMENT":
-      return state + 1;
-    case "DECREMENT":
-      return state - 1;
-    default:
-      return state;
-  }
-};
-
-// HOMEMADE createStore
-// const createStore = (reducer) => {
-//   let state = 0;
-//   let listeners = [];
-//   const getState = () => state;
-//   const dispatch = (action) => {
-//     state = reducer(state, action);
-//     listeners.forEach((listener) => listener());
-//   };
-//   const subscribe = (listener) => {
-//     listeners.push(listener);
-
-//     return () => {
-//       listeners.filter((l) => l !== listener);
-//     };
-//   };
-
-//   return { getState, dispatch, subscribe };
+// const counter = (state = 0, action) => {
+//   switch (action.type) {
+//     case "INCREMENT":
+//       return state + 1;
+//     case "DECREMENT":
+//       return state - 1;
+//     default:
+//       return state;
+//   }
 // };
 
-const Counter = ({ value, onIncrement, onDecrement }) => (
-  <div>
-    <h1>{value}</h1>
-    <button onClick={onIncrement}>+</button>
-    <button onClick={onDecrement}>-</button>
-  </div>
-);
+// // HOMEMADE createStore
+// // const createStore = (reducer) => {
+// //   let state = 0;
+// //   let listeners = [];
+// //   const getState = () => state;
+// //   const dispatch = (action) => {
+// //     state = reducer(state, action);
+// //     listeners.forEach((listener) => listener());
+// //   };
+// //   const subscribe = (listener) => {
+// //     listeners.push(listener);
 
-const store = createStore(counter);
+// //     return () => {
+// //       listeners.filter((l) => l !== listener);
+// //     };
+// //   };
 
-const onIncrement = () => {
-  store.dispatch({ type: "INCREMENT" });
-};
+// //   return { getState, dispatch, subscribe };
+// // };
 
-const onDecrement = () => {
-  store.dispatch({ type: "DECREMENT" });
-};
+// const Counter = ({ value, onIncrement, onDecrement }) => (
+//   <div>
+//     <h1>{value}</h1>
+//     <button onClick={onIncrement}>+</button>
+//     <button onClick={onDecrement}>-</button>
+//   </div>
+// );
 
-function App() {
-  const [x, setX] = React.useState(false);
-  store.subscribe(() => {
-    setX(!x);
-  });
+// const store = createStore(counter);
 
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>{store.getState()}</p>
-        <button
-          onClick={() => {
-            onIncrement();
-          }}
-        >
-          Plus 1
-        </button>
-        <button
-          onClick={() => {
-            onDecrement();
-          }}
-        >
-          Minus 1
-        </button>
-      </header>
-    </div>
-  );
-}
+// const onIncrement = () => {
+//   store.dispatch({ type: "INCREMENT" });
+// };
 
-const render = () =>
-  ReactDOM.render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>,
-    document.getElementById("root")
-  );
+// const onDecrement = () => {
+//   store.dispatch({ type: "DECREMENT" });
+// };
 
-export default App;
+// function App() {
+//   const [x, setX] = React.useState(false);
+//   store.subscribe(() => {
+//     setX(!x);
+//   });
+
+//   return (
+//     <div className="App">
+//       <header className="App-header">
+//         <img src={logo} className="App-logo" alt="logo" />
+//         <p>{store.getState()}</p>
+//         <button
+//           onClick={() => {
+//             onIncrement();
+//           }}
+//         >
+//           Plus 1
+//         </button>
+//         <button
+//           onClick={() => {
+//             onDecrement();
+//           }}
+//         >
+//           Minus 1
+//         </button>
+//       </header>
+//     </div>
+//   );
+// }
+
+// const render = () =>
+//   ReactDOM.render(
+//     <React.StrictMode>
+//       <App />
+//     </React.StrictMode>,
+//     document.getElementById("root")
+//   );
+
+// export default App;

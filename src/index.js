@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useRef } from "react";
 import ReactDOM from "react-dom";
-import { createStore } from "redux";
+import { createStore, combineReducers } from "redux";
 import "./App.css";
 
 const todoReducer = (state, action) => {
@@ -36,6 +36,42 @@ const multipleTodoReducer = (state = [], action) => {
   }
 };
 
+const visibilityReducer = (state = null, action) => {
+  switch (action.type) {
+    case "VISIBILITY_FILTER":
+      return action.value;
+    default:
+      return state;
+  }
+};
+
+const changeFilter = (value) => {
+  store.dispatch({
+    type: "VISIBILITY_FILTER",
+    value,
+  });
+};
+
+const masterReducer = combineReducers({
+  todos: multipleTodoReducer,
+  visibilityFilter: visibilityReducer,
+});
+
+// const masterReducer = (state = {}, action) => {
+//   switch (action.type) {
+//     case "ADD_TODO":
+//     case "TOGGLE_TODO":
+//       return { ...state, todos: multipleTodoReducer(state.todos, action) };
+//     case "VISIBILITY_FILTER":
+//       return {
+//         ...state,
+//         visibilityFilter: visibilityReducer(state.visibilityFilter, action),
+//       };
+//     default:
+//       return state;
+//   }
+// };
+
 const addTodo = (text) =>
   store.dispatch({
     type: "ADD_TODO",
@@ -50,23 +86,83 @@ const toggleTodo = (id) => {
   });
 };
 
-const Todo = ({ todos }) => (
-  <div>
-    {todos.map((todo) => (
-      <p
-        onClick={() => toggleTodo(todo.id)}
-      >{`${todo.text} Completed:${todo.completed}`}</p>
-    ))}
+const getVisibleTodos = (todos, visibilityFilter) => {
+  switch (visibilityFilter) {
+    case "completed":
+      return todos.filter((todo) => todo.completed);
+    case "incompleted":
+      return todos.filter((todo) => !todo.completed);
+    default:
+      return todos;
+  }
+};
 
-    <button onClick={() => addTodo("Get Milk")}>add Todo</button>
-  </div>
-);
+const VisibilityButton = ({ filter, currentFilter, children }) => {
+  return (
+    <button
+      style={
+        currentFilter === filter
+          ? {
+              backgroundColor: "chartreuse",
+            }
+          : undefined
+      }
+      onClick={() => changeFilter(filter)}
+    >
+      {children}
+    </button>
+  );
+};
 
-const store = createStore(multipleTodoReducer);
+const Todo = ({ todos = [], visibilityFilter }) => {
+  const [inputValue, setInputValue] = React.useState("");
+  const visibleTodos = getVisibleTodos(todos, visibilityFilter);
+  return (
+    <div>
+      <input
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        type="text"
+      />
+      <div>
+        <VisibilityButton filter="completed" currentFilter={visibilityFilter}>
+          Show complete
+        </VisibilityButton>
+        <VisibilityButton filter="incompleted" currentFilter={visibilityFilter}>
+          Show incompleted
+        </VisibilityButton>
+        <VisibilityButton filter={null} currentFilter={visibilityFilter}>
+          Show all
+        </VisibilityButton>
+      </div>
+      <button
+        onClick={() => {
+          addTodo(inputValue);
+          setInputValue("");
+        }}
+      >
+        add Todo
+      </button>
+      {visibleTodos.map((todo) => (
+        <h1
+          style={{ textDecoration: todo.completed ? "line-through" : "none" }}
+          onClick={() => toggleTodo(todo.id)}
+        >
+          {todo.text}
+        </h1>
+      ))}
+    </div>
+  );
+};
+
+const store = createStore(masterReducer);
 
 const render = () =>
   ReactDOM.render(
-    <Todo todos={store.getState()} />,
+    <Todo
+      todos={store.getState().todos}
+      visibilityFilter={store.getState().visibilityFilter}
+    />,
     document.getElementById("root")
   );
 
