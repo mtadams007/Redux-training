@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import { createStore, combineReducers } from "redux";
 import "./App.css";
@@ -45,7 +45,7 @@ const visibilityReducer = (state = null, action) => {
   }
 };
 
-const changeFilter = (value) => {
+const changeFilter = (store, value) => {
   store.dispatch({
     type: "VISIBILITY_FILTER",
     value,
@@ -72,18 +72,48 @@ const masterReducer = combineReducers({
 //   }
 // };
 
-const addTodo = (text) =>
-  store.dispatch({
+let id = 0;
+
+const addTodo = (store, text) => {
+  id++;
+  return store.dispatch({
     type: "ADD_TODO",
     text,
-    id: Math.floor(Math.random() * 100),
+    id,
   });
+};
 
-const toggleTodo = (id) => {
+const toggleTodo = (store, id) => {
   store.dispatch({
     type: "TOGGLE_TODO",
     id,
   });
+};
+
+const Todo = ({ completed, text, onClick }) => (
+  <h1
+    style={{ textDecoration: completed ? "line-through" : "none" }}
+    onClick={onClick}
+  >
+    {text}
+  </h1>
+);
+
+const VisibleTodoList = ({ store }) => {
+  const [forced, setForced] = useState(false);
+  useEffect(() => {
+    return store.subscribe(() => setForced(!forced));
+  });
+  const { todos, visibilityFilter } = store.getState();
+
+  return getVisibleTodos(todos, visibilityFilter).map((todo) => (
+    <Todo
+      key={todo.id}
+      completed={todo.completed}
+      text={todo.text}
+      onClick={() => toggleTodo(store, todo.id)}
+    />
+  ));
 };
 
 const getVisibleTodos = (todos, visibilityFilter) => {
@@ -97,26 +127,9 @@ const getVisibleTodos = (todos, visibilityFilter) => {
   }
 };
 
-const VisibilityButton = ({ filter, currentFilter, children }) => {
-  return (
-    <button
-      style={
-        currentFilter === filter
-          ? {
-              backgroundColor: "chartreuse",
-            }
-          : undefined
-      }
-      onClick={() => changeFilter(filter)}
-    >
-      {children}
-    </button>
-  );
-};
-
-const Todo = ({ todos = [], visibilityFilter }) => {
+const AddTodoButton = ({ store }) => {
   const [inputValue, setInputValue] = React.useState("");
-  const visibleTodos = getVisibleTodos(todos, visibilityFilter);
+
   return (
     <div>
       <input
@@ -124,47 +137,76 @@ const Todo = ({ todos = [], visibilityFilter }) => {
         onChange={(e) => setInputValue(e.target.value)}
         type="text"
       />
-      <div>
-        <VisibilityButton filter="completed" currentFilter={visibilityFilter}>
-          Show complete
-        </VisibilityButton>
-        <VisibilityButton filter="incompleted" currentFilter={visibilityFilter}>
-          Show incompleted
-        </VisibilityButton>
-        <VisibilityButton filter={null} currentFilter={visibilityFilter}>
-          Show all
-        </VisibilityButton>
-      </div>
       <button
         onClick={() => {
-          addTodo(inputValue);
+          addTodo(store, inputValue);
           setInputValue("");
         }}
       >
         add Todo
       </button>
-      {visibleTodos.map((todo) => (
-        <h1
-          style={{ textDecoration: todo.completed ? "line-through" : "none" }}
-          onClick={() => toggleTodo(todo.id)}
-        >
-          {todo.text}
-        </h1>
-      ))}
     </div>
   );
 };
 
-const store = createStore(masterReducer);
-
-const render = () =>
-  ReactDOM.render(
-    <Todo
-      todos={store.getState().todos}
-      visibilityFilter={store.getState().visibilityFilter}
-    />,
-    document.getElementById("root")
+const LinkButton = ({ active, onClick, children }) => {
+  return (
+    <button
+      style={
+        active
+          ? {
+              backgroundColor: "chartreuse",
+            }
+          : undefined
+      }
+      onClick={() => onClick()}
+    >
+      {children}
+    </button>
   );
+};
 
-store.subscribe(render);
-render();
+const VisibilityButton = ({ store, filter, children }) => {
+  const [forced, setForced] = useState(false);
+  useEffect(() => {
+    return store.subscribe(() => setForced(!forced));
+  });
+
+  const state = store.getState();
+
+  return (
+    <LinkButton
+      active={state.visibilityFilter === filter}
+      onClick={() => changeFilter(store, filter)}
+    >
+      {children}
+    </LinkButton>
+  );
+};
+
+const Footer = ({ store }) => (
+  <div>
+    <VisibilityButton store={store} filter="completed">
+      Show complete
+    </VisibilityButton>
+    <VisibilityButton store={store} filter="incompleted">
+      Show incompleted
+    </VisibilityButton>
+    <VisibilityButton store={store} filter={null}>
+      Show all
+    </VisibilityButton>
+  </div>
+);
+
+const App = ({ store }) => (
+  <div>
+    <AddTodoButton store={store} />
+    <VisibleTodoList store={store} />
+    <Footer store={store} />
+  </div>
+);
+
+ReactDOM.render(
+  <App store={createStore(masterReducer)} />,
+  document.getElementById("root")
+);
